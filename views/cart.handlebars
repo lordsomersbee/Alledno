@@ -1,0 +1,26 @@
+{{#if cart_products}}
+
+{{!-- <ul>
+    {{#each cart_products}}
+    <li>{{this.title}}  {{this.amount_ordered}} szt. za {{this.price}} zł</li>
+    {{/each}}
+</ul> --}}
+
+<table class="table">
+    {{#each cart_products}}
+    <tr>
+        <td>{{this.title}}</td>
+        <td>{{this.amount_ordered}} szt. za {{this.price}} zł</td>
+    </tr>
+    {{/each}}
+    <tr>
+        <td><strong>Łącznie</strong></td>
+        <td><strong>{{ sum }} zł</strong></td>
+    </tr>
+</table>
+
+<a href="./finalize" class="btn btn-success">Płacę!</a>
+
+{{else}}
+<p>Twoj koszyk jest pusty</p>
+{{/if}}

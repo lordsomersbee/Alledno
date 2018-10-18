@@ -1,0 +1,20 @@
+{{#if item}}
+    <img class="card-img-top" src="/img/legitymacja2.jpg" alt="">
+    <div class="card-body">
+    <p class="card-text">{{item.title}}</p>
+    <p class="card-text">{{item.description}}</p>
+    <p class="card-text">{{item.price}} zł</p>
+    <p class="card-text">{{item.amount_ordered}}/{{item.amount_total}}</p>
+    <div class="d-flex justify-content-between align-items-center">
+    
+    <form method="post" action="./buy/{{item._id}}">
+        <input type="number" min="1" max={{item.amount_total}} name="amount">
+        {{!-- <input type="number" name="amount"> --}}
+        <p>/{{item.amount_total}}</p>
+        <button type="submit" class="btn btn-success">Dodaj do koszyka!</button>
+    </form>
+
+    </div>
+{{else}}
+    <p>Nie ma takiego przedmiotu</p>
+{{/if}}
