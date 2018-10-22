@@ -62,3 +62,10 @@
     text-overflow: ellipsis; 
     text-align: center;
   }
+
+  .display img {
+    width: 300px;
+    height: 300px;
+    margin-right: 20px;
+    border-radius: 5%;
+  }  

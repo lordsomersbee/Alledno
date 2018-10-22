@@ -19,6 +19,9 @@ var ProductSchema = mongoose.Schema({
     },
     description: {
         type: String
+    },
+    seller: { 
+        type: mongoose.Schema.Types.ObjectId, ref: 'User' 
     }
 });
 

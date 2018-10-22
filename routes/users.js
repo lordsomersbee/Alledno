@@ -105,10 +105,12 @@ router.get('/panel', function(req, res){
 
 router.get('/cart', function(req, res) {
 	if(req.isAuthenticated()){
-		var sum = 0;
-		req.session.cart.forEach(function(item) {
-			sum += item.amount_ordered * item.price;
-		});
+		if(req.session.cart) {
+			var sum = 0;
+			req.session.cart.forEach(function(item) {
+				sum += item.amount_ordered * item.price;
+			});
+		}
 
 		res.render('cart', {
 			cart_products: req.session.cart,

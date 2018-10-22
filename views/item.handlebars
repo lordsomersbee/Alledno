@@ -1,20 +1,26 @@
 {{#if item}}
-    <img class="card-img-top" src="/img/{{ item.image}}" alt="">
-    <div class="card-body">
-    <p class="card-text">{{item.title}}</p>
-    <p class="card-text">{{item.description}}</p>
-    <p class="card-text">{{item.price}} zł</p>
-    <p class="card-text">{{item.amount_ordered}}/{{item.amount_total}}</p>
-    <div class="d-flex justify-content-between align-items-center">
-    
-    <form method="post" action="../buy/{{item._id}}">
-        <input type="number" min="1" max={{item.amount_total}} name="amount">
-        {{!-- <input type="number" name="amount"> --}}
-        <p>/{{item.amount_total}}</p>
-        <button type="submit" class="btn btn-success">Dodaj do koszyka!</button>
-    </form>
+    <div class="row">
+        <div class="col">
+            <img class="display" style="float:left" src="/img/{{ item.image}}" alt="">
+        </div>
+        <div class="col">
+            <h2 class="">{{item.title}}</h2>
+            <h3 class="">od {{item.seller.username}}</h3>
+            <h4 class="">{{item.price}} zł</h4>
+            <p class="">{{item.amount_ordered}}/{{item.amount_total}}</p>
+            <p class="">{{item.description}}</p>
+            {{!-- <div class="d-flex justify-content-between align-items-center"></div> --}}
 
+            <form method="post" action="../buy/{{item._id}}">
+                <input type="number" min="1" max={{item.amount_total}} name="amount">
+                {{!-- <input type="number" name="amount"> --}}
+                <p>/{{item.amount_total}}</p>
+                <button type="submit" class="btn btn-success">Dodaj do koszyka!</button>
+            </form>
+        </div>
     </div>
+    
+
 {{else}}
     <p>Nie ma takiego przedmiotu</p>
 {{/if}}
