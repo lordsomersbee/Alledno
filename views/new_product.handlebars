@@ -1,0 +1,29 @@
+<h2 class="page-header">Wystaw produkt</h2>
+{{#if errors}}
+  {{#each errors}}
+    <div class="alert alert-danger">{{msg}}</div>
+  {{/each}}
+{{/if}}
+<form method="post" action="/product/new_product" enctype="multipart/form-data">
+   <div class="form-group">
+    <label>Tytuł</label>
+    <input type="text" class="form-control" placeholder="Tytuł" name="title">
+  </div>
+  <div class="form-group">
+    <label>Cena</label>
+    <input type="number" class="form-control" name="price">
+  </div>
+   <div class="form-group">
+    <label>Ilośc</label>
+    <input type="number" class="form-control" name="amount">
+  </div>
+  <div class="form-group">
+    <label>Zdjęcie</label>
+    <input type="file" class="form-control" name="avatar">
+  </div>
+  <div class="form-group">
+    <label>Opis</label>
+    <textarea class="form-control" placeholder="Opis" name="description"></textarea>
+  </div>
+  <button type="submit" class="btn btn-default">Wystaw</button>
+</form>

@@ -156,16 +156,6 @@ router.post('/change_email', function(req, res) {
 				errors: errors
 			});
 		} else {
-			// User.findById(req.user._id, function(err, userToUpdate) {
-			// 	userToUpdate.email = req.body.email;
-			// 	userToUpdate.save(function(err){
-			// 		if(err) throw err;
-			// 	});
-
-			// 	req.flash('success_msg', 'Email został zmieniony');
-			// 	res.redirect('/users/panel');
-			// });
-
 			User.changeEmail(req.user, req.body.email, function(err){
 				if(err) throw err;
 

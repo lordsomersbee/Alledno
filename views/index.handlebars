@@ -4,13 +4,14 @@
     {{#each products}}
         <div class="col-md-3">
             <div class="card mb-4 shadow-sm custom">
-                <div class="text-center"><img class="card-img-top rounded mx-auto d-block" src="/img/legitymacja2.jpg" alt=""></div>
+                {{!-- <div class="text-center"><img class="card-img-top rounded mx-auto d-block" src="/img/legitymacja2.jpg" alt=""></div> --}}
+                <div class="text-center"><img class="card-img-top rounded mx-auto d-block" src="img/{{this.image}}" alt=""></div>
                 <div class="card-body">
                 <p class="card-text" style="font-size: 1.5em">{{this.price}} zł</p>
                 <p class="card-text">{{this.title}}</p>
                 <p class="card-text">{{this.amount_ordered}} szt. sprzedano</p>
                 <div class="d-flex justify-content-between align-items-center">
-                <div class="text-center"><a href="/product/{{this._id}}"><button type="button" class="btn btn-success">Zobacz!</button></a></div>
+                <div class="text-center"><a href="/product/display/{{this._id}}"><button type="button" class="btn btn-success">Zobacz!</button></a></div>
                 </div>
                 </div>
             </div>
