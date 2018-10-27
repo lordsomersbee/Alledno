@@ -10,7 +10,7 @@
     {{#each cart_products}}
     <tr>
         <td>{{this.title}}</td>
-        <td>{{this.amount_ordered}} szt. za {{this.price}} zł</td>
+        <td>{{this.amount_ordered}} szt. za {{this.price}} zł <a href="./delete_from_cart/{{this._id}}"  id="delete" class="btn btn-danger">Usuń</button></td>
     </tr>
     {{/each}}
     <tr>

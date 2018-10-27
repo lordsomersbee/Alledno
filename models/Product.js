@@ -6,13 +6,13 @@ var ProductSchema = mongoose.Schema({
         index: true
     },
     price: {
-        type: String
+        type: Number
     },
     amount_total: {
-        type: String
+        type: Number
     },
     amount_ordered: {
-        type: String
+        type: Number
     },
     image: {
         type: String
@@ -33,4 +33,9 @@ module.exports.createProduct = function(newProduct, callback){
 
 module.exports.getProducts = function(callback){
     Product.find(callback);
+}
+
+module.exports.increaseAmountOrdered = function(product, amount, callback){
+    product.amount_ordered += amount;
+    product.save(callback);
 }

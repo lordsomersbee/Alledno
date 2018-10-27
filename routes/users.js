@@ -4,6 +4,7 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;;
 
 var User = require('../models/User');
+var Product = require('../models/Product');
 
 router.get('/register', function(req, res){
 	res.render('register');
@@ -88,6 +89,16 @@ router.post('/login',
 });
 
 router.get('/logout', function(req, res){
+	if(req.session.cart) {
+		req.session.cart.forEach(function(item) {
+			Product.findById(item._id, function(err, itemInDatabase) {
+				Product.increaseAmountOrdered(itemInDatabase, -item.amount_ordered, function(err) {
+					if(err) throw err;
+				})
+			});
+		});
+	}
+
 	req.logout();
 	delete req.session.cart;
 
@@ -95,80 +106,91 @@ router.get('/logout', function(req, res){
 	res.redirect('/users/login');
 });
 
-router.get('/panel', function(req, res){
-	if(req.isAuthenticated()){
-		res.render('panel');
-	} else {
-		res.redirect('/users/login');
-	}
+router.get('/panel', checkAuthentication, function(req, res){
+	res.render('panel');
 });
 
-router.get('/cart', function(req, res) {
-	if(req.isAuthenticated()){
-		if(req.session.cart) {
-			var sum = 0;
-			req.session.cart.forEach(function(item) {
-				sum += item.amount_ordered * item.price;
+router.get('/cart', checkAuthentication, function(req, res) {
+	if(req.session.cart) {
+		var sum = 0;
+		req.session.cart.forEach(function(item) {
+			sum += item.amount_ordered * item.price;
+		});
+	}
+
+	res.render('cart', {
+		cart_products: req.session.cart,
+		sum: sum
+	});
+
+});
+
+router.get('/delete_from_cart/:item_id', checkAuthentication, function(req, res) {
+	Product.findById(req.params.item_id, function(err, item) {
+		if (err) throw err;
+
+		var pos = req.session.cart.findIndex(i => i._id == item._id);
+
+		if(pos != -1) {
+			Product.increaseAmountOrdered(item, -req.session.cart[pos].amount_ordered, function(err) {
+				if(err) throw err;
+
+				req.session.cart.splice(pos, 1);
+				res.redirect("/users/cart");
 			});
 		}
+		else {
+			console.log("err");
+		}
+	});
+});
 
-		res.render('cart', {
-			cart_products: req.session.cart,
-			sum: sum
+router.post('/change_password', checkAuthentication, function(req, res) {
+	req.checkBody('password', 'Password is required').notEmpty();
+	req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
+
+	var errors = req.validationErrors();
+
+	if(errors) {
+		res.render('panel', {
+			errors: errors
 		});
 	} else {
-		res.redirect('/users/login');
+		User.changePassword(req.user, req.body.password, function(err){
+			if(err) throw err;
+
+			req.flash('success_msg', 'Hasło zostało zmienione');
+			res.redirect('/users/panel');
+		});
 	}
 });
 
-router.post('/change_password', function(req, res) {
-	if(req.isAuthenticated()){
-		req.checkBody('password', 'Password is required').notEmpty();
-		req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
+router.post('/change_email', checkAuthentication, function(req, res) {
+	req.checkBody('email', 'Email is required').notEmpty();
+	req.checkBody('email', 'Email is not valid').isEmail();
 
-		var errors = req.validationErrors();
+	var errors = req.validationErrors();
 
-		if(errors) {
-			res.render('panel', {
-				errors: errors
-			});
-		} else {
-			User.changePassword(req.user, req.body.password, function(err){
-				if(err) throw err;
-
-				req.flash('success_msg', 'Hasło zostało zmienione');
-				res.redirect('/users/panel');
-			});
-		}
-
+	if(errors) {
+		res.render('panel', {
+			errors: errors
+		});
 	} else {
-		res.redirect('/users/login');
+		User.changeEmail(req.user, req.body.email, function(err){
+			if(err) throw err;
+
+			req.flash('success_msg', 'Email został zmieniony');
+			res.redirect('/users/panel');
+		});
 	}
 });
 
-router.post('/change_email', function(req, res) {
-	if(req.isAuthenticated()){
-		req.checkBody('email', 'Email is required').notEmpty();
-		req.checkBody('email', 'Email is not valid').isEmail();
-
-		var errors = req.validationErrors();
-
-		if(errors) {
-			res.render('panel', {
-				errors: errors
-			});
-		} else {
-			User.changeEmail(req.user, req.body.email, function(err){
-				if(err) throw err;
-
-				req.flash('success_msg', 'Email został zmieniony');
-				res.redirect('/users/panel');
-			});
-		}
-
-	} else {
-		res.redirect('/users/login');
-	}
-});
+function checkAuthentication(req,res,next){
+    if(req.isAuthenticated()){
+        next();
+    } else{
+        res.redirect("/users/login");
+    }
+}
 
 module.exports = router;

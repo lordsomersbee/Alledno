@@ -31,29 +31,33 @@ router.post('/buy/:item_id', upload.none(), function(req, res) {
 	Product.findById(req.params.item_id, function(err, item) {
         if (err) throw err;
 		
-		if(req.body.amount <= item.amount_total) {
-			item.amount_ordered = req.body.amount;
+		if(req.body.amount <= item.amount_total - item.amount_ordered) {
+			Product.increaseAmountOrdered(item, parseInt(req.body.amount), function(err){
+				if(err) throw err;
 
-			if(req.session.cart) {
-				var cart = req.session.cart;
-				var pos = cart.findIndex(i => i._id == item._id);
-				
-				if(pos == -1) {
-					cart.push(item);
+				item.amount_ordered = req.body.amount;
+
+				if(req.session.cart) {
+					var cart = req.session.cart;
+					var pos = cart.findIndex(i => i._id == item._id);
+					
+					if(pos == -1) {
+						cart.push(item);
+					}
+					else {
+						var buf = parseInt(cart[pos].amount_ordered) + parseInt(item.amount_ordered);
+						cart[pos].amount_ordered = buf;
+					}
 				}
 				else {
-					var buf = parseInt(cart[pos].amount_ordered) + parseInt(item.amount_ordered);
-					cart[pos].amount_ordered = buf;
+					var cart = [];
+					cart.push(item);
 				}
-			}
-			else {
-				var cart = [];
-				cart.push(item);
-			}
 
-			req.session.cart = cart;
+				req.session.cart = cart;
 
-			res.redirect('/users/cart');
+				res.redirect('/users/cart');
+			});	
 		}
 		else {
 			res.redirect('/product/display/'+item._id);
@@ -66,11 +70,11 @@ router.get('/new_product', function(req, res){
 });
 
 router.post('/new_product', upload.single('avatar'), function(req, res) {
-	var title = req.body.title;
-	var price = req.body.price;
-	var amount = req.body.amount;
-	var description = req.body.description;	
-	var seller = req.user._id;
+	req.checkBody('title', 'Tytuł aukcji jest wymagany').notEmpty();
+	req.checkBody('price', 'Cena produktu jest wymagana').notEmpty();
+	req.checkBody('amount', 'Ilośc produktu jest wymagana').notEmpty();
+	req.checkBody('description', 'Opis aukcji jest wymagany').notEmpty();
+	req.checkBody('file', 'Zdjęcie przedmiotu jest wymagane').notEmpty();
 
 	var errors = req.validationErrors();
 
@@ -80,13 +84,13 @@ router.post('/new_product', upload.single('avatar'), function(req, res) {
 		});
 	} else {
 		var newProduct = new Product({
-			title: title,
-			price: price,
-			amount_total: amount,
+			title: req.body.title,
+			price: req.body.price,
+			amount_total: req.body.amount,
 			amount_ordered: 0,
 			image: req.file.filename,
-			description: description,
-			seller: seller
+			description: req.body.description,
+			seller: req.user._id
 		});
 
 		// console.log(newProduct);
