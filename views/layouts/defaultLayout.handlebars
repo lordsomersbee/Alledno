@@ -23,9 +23,16 @@
             <ul class="nav nav-pills pull-right">
                     <li role="presentation"><a href="/">Dasboard</a></li>
                 {{#if user}}
-                    <li role="presentation"><a href="/users/panel">Panel</a></li>
+                    {{#ifeq user.role "confirmed"}}
+                        <li role="presentation"><a href="/product/new_product">Wystaw produkt</a></li>
+                    {{/ifeq}}
+                    {{#ifeq user.role "admin"}}
+                        <li role="presentation"><a href="/product/new_product">Wystaw produkt</a></li>
+                        <li role="presentation"><a href="/users/admin">Panel administracyjny</a></li>
+                    {{/ifeq}}
+                    <li role="presentation"><a href="/users/panel">Panel użytkownika</a></li>
                     <li role="presentation"><a href="/users/cart">Koszyk</a></li>
-                    <li role="presentation"><a href="/product/new_product">Wystaw produkt</a></li>
+                    <li role="presentation"><a href="/users/show_orders">Historia zamowień</a></li>
                     <li role="presentation"><a href="/users/logout">Logout</a></li>
                 {{else}}
                     <li role="presentation"><a href="/users/login">Login</a></li>

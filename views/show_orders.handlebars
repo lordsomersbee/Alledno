@@ -1,0 +1,28 @@
+{{#if orders}}
+
+{{#each orders}}
+<div>
+<table class="table">
+    <tr>
+        <td>data zamowienia: {{this.date}}</td>
+    </tr>
+    
+    <tr>
+        <th>Nazwa aukcji</th>
+        <th>Ilośc</th>
+        <th>Cena za szt.</th>
+    </tr>
+    {{#each this.items}}
+    <tr>
+        <td>{{this.title}}</td>
+        <td>{{this.amount_ordered}} szt.</td>
+        <td>{{this.price}} zł</td>
+    </tr>
+    {{/each}}
+</table>
+</div>
+{{/each}}
+
+{{else}}
+<p>Nie masz jeszcze zamowień</p>
+{{/if}}

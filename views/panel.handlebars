@@ -42,3 +42,19 @@
         </form>
     </div>
 </div>
+
+{{#ifeq user.role "unconfirmed"}}
+<div class="row">
+    <form method="POST" action="/users/confirm">
+        <label>W celu weryfikacji podaj PESEL</label>
+        <div class="form-group">
+            <input type="text" class="form-control" name="pesel" placeholder="PESEL">
+        </div>
+        <button type="submit" class="btn btn-info">Zweryfikuj</button>
+    </form>
+</div>
+{{else}}
+<div class="row">
+    <p class="btn btn-success">Jesteś zweryfikowany. Możesz wystawiac aukcje</p>
+</div>
+{{/ifeq}}

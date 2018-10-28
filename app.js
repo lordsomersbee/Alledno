@@ -23,8 +23,12 @@ var app = express();
 
 //Start view
 app.set('views', path.join(__dirname, 'views'));
-app.engine('handlebars', exphbs({defaultLayout:'defaultLayout'}));
+app.engine('handlebars', exphbs({
+    defaultLayout:'defaultLayout',
+    helpers: require("./views/layouts/helpers.js").helpers,
+}));
 app.set('view engine', 'handlebars');
+
 
 //Body parser
 app.use(bodyParser.json());
@@ -72,7 +76,6 @@ app.use(function (req, res, next) {
     res.locals.error_msg = req.flash('error_msg');
     res.locals.error = req.flash('error');
     res.locals.user = req.user || null;
-    res.locals.cart = req.cart || null;
     next();
 });
 

@@ -12,6 +12,14 @@ var UserSchema = mongoose.Schema({
     },
     email: {
         type: String
+    },
+    role: {
+        type: String,
+        default: "unconfirmed"
+    },
+    pesel: {
+        type: String,
+        default: "0"
     }
     // offers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }]
 });
@@ -51,4 +59,19 @@ module.exports.changePassword = function(userToSave, newPassword, callback){
             userToSave.save(callback);
         });
     });
+}
+
+module.exports.confirmUser = function(user, callback){
+    user.role = "confirmed";
+    user.save(callback);
+}
+
+module.exports.changePesel = function(user, pesel, callback){
+    user.pesel = pesel;
+    user.save(callback);
+}
+
+module.exports.getUnconfirmedUsers = function(callback){
+    var query = {pesel: { $gt: 1 }, role: "unconfirmed"};
+    User.find(query, callback);
 }

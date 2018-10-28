@@ -1,0 +1,21 @@
+{{#if users}}
+
+<table class="table">
+    <tr>
+        <th>Nazwa użytkownika</th>
+        <th>Email</th>
+        <th>Pesel</th>
+    </tr>
+    {{#each users}}
+    <tr>
+        <td>{{this.username}}</td>
+        <td>{{this.email}}</td>
+        <td>{{this.pesel}}</td>
+        <td><a href="./confirm_user/{{this._id}}" class="btn btn-success">Zweryfikuj</a></td>
+    </tr>
+    {{/each}}
+</table>
+
+{{else}}
+<p>Nie ma nikogo do weryfikacji</p>
+{{/if}}

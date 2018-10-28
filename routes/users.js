@@ -1,10 +1,11 @@
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
-var LocalStrategy = require('passport-local').Strategy;;
+var LocalStrategy = require('passport-local').Strategy;
 
 var User = require('../models/User');
 var Product = require('../models/Product');
+var Order = require('../models/Order');
 
 router.get('/register', function(req, res){
 	res.render('register');
@@ -16,11 +17,6 @@ router.get('/login', function(req, res){
 
 //Register POST
 router.post('/register', function(req, res){
-	var email = req.body.email;
-	var username = req.body.username;
-	var password = req.body.password;
-	var password2 = req.body.password2;	
-
 	req.checkBody('email', 'Email is required').notEmpty();
 	req.checkBody('email', 'Email is not valid').isEmail();
 	req.checkBody('username', 'Username is required').notEmpty();
@@ -35,9 +31,9 @@ router.post('/register', function(req, res){
 		});
 	} else {
 		var newUser = new User({
-			username: username,
-			email: email,
-			password: password
+			username: req.body.username,
+			email: req.body.email,
+			password: req.body.password
 		});
 
 		User.createUser(newUser, function(err, user){
@@ -185,10 +181,109 @@ router.post('/change_email', checkAuthentication, function(req, res) {
 	}
 });
 
+router.get('/finalize', checkConfirmation, function(req, res) {
+	var newOrder = new Order({
+		items: req.session.cart,
+		customer: req.user._id
+	});
+	Order.createOrder(newOrder, function(err){
+		if(err) throw err;
+
+		delete req.session.cart;
+
+		req.flash('success_msg', 'Zamowienie zakończone');
+		res.redirect('/');
+	});
+
+});
+
+router.get('/show_orders', checkAuthentication, function(req, res) {
+	Order.find({customer: req.user._id}).
+	populate('items').
+	exec(function(err, orders) {
+		if (err) throw err;
+
+		res.render('show_orders', {
+			orders: orders
+		});
+	});
+});
+
+router.post('/confirm', checkAuthentication, function(req, res) {
+	req.checkBody('pesel', 'Pesel jest wymagany').notEmpty();
+	req.checkBody('pesel', 'Pesel jest błędny').isNumeric();
+	req.checkBody('pesel', 'Pesel jest błędny').isLength({min:9, max: 9});
+
+	var errors = req.validationErrors();
+
+	if(errors) {
+		res.render('panel', {
+			errors: errors
+		});
+	} else {
+		User.changePesel(req.user, req.body.pesel, function(err){
+			if(err) throw err;
+
+			req.flash('success_msg', 'Prośba o weryfikacja została wysłana. Administrator podejmie działanie wciągu 24h.');
+			res.redirect('/users/panel');
+		});
+	}
+});
+
+router.get('/admin', checkAdmin, function(req, res) {
+	User.getUnconfirmedUsers(function(err, users) {
+		if (err) throw err;
+
+		res.render('admin', {
+			users: users
+		});
+	});
+});
+
+router.get('/confirm_user/:user_id', checkAdmin, function(req, res) {
+	User.findById(req.params.user_id, function(err, user) {
+		if(err) throw err;
+		User.confirmUser(user, function(err) {
+			if(err) throw err;
+	
+			req.flash('success_msg', 'Użutkownik został zweryfikowany');
+			res.redirect('/users/admin');
+		});
+	});
+});
+
+//------------
+
 function checkAuthentication(req,res,next){
     if(req.isAuthenticated()){
         next();
-    } else{
+    } else {
+        res.redirect("/users/login");
+    }
+}
+
+function checkConfirmation(req,res,next){
+    if(req.isAuthenticated()){
+        if(req.user.role == "confirmed" || req.user.role == "admin") {
+			next();
+		} else {
+			req.flash('error_msg', 'Musisz byc zweryfikowany aby moc wykonac tą czynnośc');
+			res.redirect('/users/panel');
+		}
+    } else {
+        res.redirect("/users/login");
+    }
+}
+
+function checkAdmin(req,res,next){
+    if(req.isAuthenticated()){
+        if(req.user.role == "admin") {
+			next();
+		} else {
+			req.flash('error_msg', 'Nie masz uprawnień do tych zasobow');
+			res.redirect('/users/panel');
+		}
+    } else {
         res.redirect("/users/login");
     }
 }
