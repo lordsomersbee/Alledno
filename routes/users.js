@@ -182,24 +182,32 @@ router.post('/change_email', checkAuthentication, function(req, res) {
 });
 
 router.get('/finalize', checkConfirmation, function(req, res) {
+	ordered_items = [];
+	req.session.cart.forEach(function(item) {
+		ordered_items.push({
+			title: item.title,
+			price: item.price,
+			amount_ordered: item.amount_ordered,
+			seller: item.seller
+		})
+	})
+
 	var newOrder = new Order({
-		items: req.session.cart,
+		items: ordered_items,
 		customer: req.user._id
 	});
 	Order.createOrder(newOrder, function(err){
 		if(err) throw err;
 
-		delete req.session.cart;
-
-		req.flash('success_msg', 'Zamowienie zakończone');
-		res.redirect('/');
+		req.session.payment_mode = true;
+		res.redirect('/payment');
 	});
 
 });
 
 router.get('/show_orders', checkAuthentication, function(req, res) {
 	Order.find({customer: req.user._id}).
-	populate('items').
+	// populate('items').
 	exec(function(err, orders) {
 		if (err) throw err;
 
@@ -230,28 +238,6 @@ router.post('/confirm', checkAuthentication, function(req, res) {
 	}
 });
 
-router.get('/admin', checkAdmin, function(req, res) {
-	User.getUnconfirmedUsers(function(err, users) {
-		if (err) throw err;
-
-		res.render('admin', {
-			users: users
-		});
-	});
-});
-
-router.get('/confirm_user/:user_id', checkAdmin, function(req, res) {
-	User.findById(req.params.user_id, function(err, user) {
-		if(err) throw err;
-		User.confirmUser(user, function(err) {
-			if(err) throw err;
-	
-			req.flash('success_msg', 'Użutkownik został zweryfikowany');
-			res.redirect('/users/admin');
-		});
-	});
-});
-
 //------------
 
 function checkAuthentication(req,res,next){
@@ -268,19 +254,6 @@ function checkConfirmation(req,res,next){
 			next();
 		} else {
 			req.flash('error_msg', 'Musisz byc zweryfikowany aby moc wykonac tą czynnośc');
-			res.redirect('/users/panel');
-		}
-    } else {
-        res.redirect("/users/login");
-    }
-}
-
-function checkAdmin(req,res,next){
-    if(req.isAuthenticated()){
-        if(req.user.role == "admin") {
-			next();
-		} else {
-			req.flash('error_msg', 'Nie masz uprawnień do tych zasobow');
 			res.redirect('/users/panel');
 		}
     } else {
