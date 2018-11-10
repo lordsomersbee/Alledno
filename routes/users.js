@@ -35,10 +35,19 @@ router.post('/register', function(req, res){
 			email: req.body.email,
 			password: req.body.password
 		});
-
+		console.log('fffffff');
 		User.createUser(newUser, function(err, user){
-			if(err) throw err;
-			// console.log(newUser);
+			if(err) {
+				// if(err.errmsg.includes('duplicate key error collection')){
+				// 	(errors = errors || []).push({param: 'username', msg: 'Nazwa użytkownika jest zajęta', value: ''})
+				// 	res.render('register', {
+				// 		errors: errors
+				// 	});
+				// }
+				// else{
+					throw err;
+				// }
+			}
 		});
 
 		req.flash('success_msg', 'You are registered');
@@ -207,7 +216,7 @@ router.get('/finalize', checkConfirmation, function(req, res) {
 
 router.get('/show_orders', checkAuthentication, function(req, res) {
 	Order.find({customer: req.user._id}).
-	// populate('items').
+	sort({"date" : -1}).
 	exec(function(err, orders) {
 		if (err) throw err;
 

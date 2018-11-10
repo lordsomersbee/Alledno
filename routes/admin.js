@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var faker = require('faker')
+var faker = require('faker');
 
 var User = require('../models/User');
 var Product = require('../models/Product');

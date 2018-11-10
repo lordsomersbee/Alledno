@@ -11,7 +11,16 @@ const storage = multer.diskStorage({
 		callback(null, req.user.username + Date.now() + path.extname(file.originalname));
 	}
 });
-var upload = multer({storage: storage});
+var upload = multer({
+	storage: storage,
+	// fileFilter: function (req, file, callback) {
+    //     var ext = path.extname(file.originalname);
+    //     if(ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg') {
+    //         return callback(new Error('Only images are allowed'))
+    //     }
+    //     callback(null, true)
+    // }
+});
 
 var Product = require('../models/Product');
 
@@ -70,13 +79,22 @@ router.get('/new_product', checkConfirmation, function(req, res){
 });
 
 router.post('/new_product', checkConfirmation, upload.single('avatar'), function(req, res) {
+	
 	req.checkBody('title', 'Tytuł aukcji jest wymagany').notEmpty();
 	req.checkBody('price', 'Cena produktu jest wymagana').notEmpty();
 	req.checkBody('amount', 'Ilośc produktu jest wymagana').notEmpty();
 	req.checkBody('description', 'Opis aukcji jest wymagany').notEmpty();
 	// req.checkBody('file', 'Zdjęcie przedmiotu jest wymagane').notEmpty();
-
+	
 	var errors = req.validationErrors();
+	if(typeof req.file !== 'undefined'){
+		if(!req.file.filename.includes('.png') && !req.file.filename.includes('.jpg') && !req.file.filename.includes('.jpeg')) {
+			(errors = errors || []).push({param: 'file', msg: 'Zły format pliku', value: ''})
+		}
+	}
+	else {
+		(errors = errors || []).push({param: 'file', msg: 'Zdjęcie jest wymagane', value: ''})
+	}
 
 	if(errors) {
 		res.render('new_product', {
@@ -104,6 +122,39 @@ router.post('/new_product', checkConfirmation, upload.single('avatar'), function
 
 		res.redirect('/');
 	}
+});
+
+router.get('/show_offers', checkConfirmation, function(req, res){
+	Product.getProductsOfUser(req.user._id, function(err, products) {
+		if (err) throw err;
+
+		res.render('show_offers', {
+			'offers': products
+		});
+	});
+});
+
+router.get('/edit_offer/:offer_id', checkConfirmation, function(req, res){
+	Product.findById(req.params.offer_id, function(err, product) {
+		if (err) throw err;
+
+		if(product.seller != req.user._id) {
+			req.flash('error_msg', 'Nie możesz edytowac tej oferty');
+			res.redirect('/');
+		} 
+		else {
+
+		}
+	});
+});
+
+router.get('/delete_offer/:offer_id', checkConfirmation, function(req, res){
+	Product.deleteOne({_id: req.params.offer_id}, function(err) {
+		if (err) throw err;
+
+		req.flash('error_msg', 'Usunięto ofertę');
+		res.redirect('/product/show_offers');
+	});
 });
 
 function checkConfirmation(req,res,next){

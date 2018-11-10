@@ -39,3 +39,7 @@ module.exports.increaseAmountOrdered = function(product, amount, callback){
     product.amount_ordered += amount;
     product.save(callback);
 }
+
+module.exports.getProductsOfUser = function(user_id, callback){
+    Product.find({ 'seller': user_id }, callback);
+}

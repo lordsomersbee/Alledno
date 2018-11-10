@@ -1,0 +1,20 @@
+{{#if offers}}
+
+<div>
+<table class="table">
+    {{#each offers}}
+    <tr>
+        <td><img class="display" style="width: 60px; height: 60px" src="/img/{{this.image}}" alt=""></td>
+        <td>{{this.title}}</td>
+        <td>{{this.price}} zł</td>
+        <td>{{this.amount_ordered}} / {{this.amount_total}}</td>
+        <td><a href="#" class="btn btn-info">Edytuj</a></td>
+        <td><a href="/product/delete_offer/{{this._id}}" class="btn btn-danger">Usuń</a></td>
+    </tr>
+    {{/each}}
+</table>
+</div>
+
+{{else}}
+<p>Nie masz jeszcze ofert</p>
+{{/if}}

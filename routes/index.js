@@ -6,14 +6,36 @@ var Product = require('../models/Product');
 router.get('/', function(req, res){
 	Product.getProducts(function(err, products) {
 		if (err) throw err;
-		// products.pop();
-
+		
 		res.render('index', {
 			products: products
 		});
 	});
 
 	// res.render('index');
+});
+
+router.get('/sort/:attr/:mode', function(req, res) {
+	console.log((req.params.attr == "asc") ? 1 : -1);
+	// Product.find({
+	// 	sort: {
+	// 		"price": 1
+	// 	}
+	// }, function(err, products) {
+	// 	if (err) throw err;
+		
+	// 	res.render('index', {
+	// 		products: products
+	// 	});
+	// });
+
+	Product.find({}).sort({"req.params.attr": (req.params.attr == "asc") ? 1 : -1}).exec(function(err, products) { 
+		if (err) throw err;
+		
+		res.render('index', {
+			products: products
+		});
+	});
 });
 
 module.exports = router;
