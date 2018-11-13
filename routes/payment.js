@@ -4,8 +4,8 @@ var paypal = require('paypal-rest-sdk');
 
 paypal.configure({
     'mode': 'sandbox', //sandbox or live
-    'client_id': 'AfwIxaLcKIZ3N3qYY2l0rbY48A0F9JgEx-V9zHXUkGvMXyOoB_9mpGIbu2SH7zPMifGefL5TTOTy5T69',
-    'client_secret': 'EKjMACt8Sc2TA38hWf_MIzkLvYwAB7QbnD5hhHMUnjVzEfjfBCznHMKPXn69w2fXMzOPTf1GGnhC9dEN'
+    'client_id': '',
+    'client_secret': ''
 });
 
 router.get('/', checkPaymentMode, function(req, res) {
