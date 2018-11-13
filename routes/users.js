@@ -35,24 +35,30 @@ router.post('/register', function(req, res){
 			email: req.body.email,
 			password: req.body.password
 		});
-		console.log('fffffff');
+		
+		
 		User.createUser(newUser, function(err, user){
 			if(err) {
-				// if(err.errmsg.includes('duplicate key error collection')){
-				// 	(errors = errors || []).push({param: 'username', msg: 'Nazwa użytkownika jest zajęta', value: ''})
-				// 	res.render('register', {
-				// 		errors: errors
-				// 	});
-				// }
-				// else{
+				if(err.errors) {
+					if(err.errors.email && err.errors.email.message.includes('to be unique'))
+						(errors = errors || []).push({param: 'email', msg: 'Email jest już zajęty', value: ''})
+					
+					if(err.errors.username && err.errors.username.message.includes('to be unique'))
+						(errors = errors || []).push({param: 'username', msg: 'Nazwa użytkownika jest już zajęta', value: ''})
+
+					res.render('register', {
+						errors: errors
+					});
+				}
+				else {
 					throw err;
-				// }
+				}
+			} 
+			else {
+				req.flash('success_msg', 'You are registered');
+				res.redirect('/users/login');
 			}
 		});
-
-		req.flash('success_msg', 'You are registered');
-
-		res.redirect('/users/login');
 	}
 });
 
@@ -190,7 +196,7 @@ router.post('/change_email', checkAuthentication, function(req, res) {
 	}
 });
 
-router.get('/finalize', checkConfirmation, function(req, res) {
+router.get('/finalize', checkAuthentication, function(req, res) {
 	ordered_items = [];
 	req.session.cart.forEach(function(item) {
 		ordered_items.push({

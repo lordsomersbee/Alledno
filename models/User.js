@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var bcrypt = require('bcryptjs');
+var uniqueValidator = require('mongoose-unique-validator');
 
 var UserSchema = mongoose.Schema({
     username: {
@@ -11,7 +12,8 @@ var UserSchema = mongoose.Schema({
         type: String
     },
     email: {
-        type: String
+        type: String,
+        unique: true
     },
     role: {
         type: String,
@@ -24,6 +26,7 @@ var UserSchema = mongoose.Schema({
     // offers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }]
 });
 
+UserSchema.plugin(uniqueValidator);
 var User = module.exports = mongoose.model('User', UserSchema);
 
 module.exports.createUser = function(newUser, callback){

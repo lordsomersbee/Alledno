@@ -11,16 +11,7 @@ const storage = multer.diskStorage({
 		callback(null, req.user.username + Date.now() + path.extname(file.originalname));
 	}
 });
-var upload = multer({
-	storage: storage,
-	// fileFilter: function (req, file, callback) {
-    //     var ext = path.extname(file.originalname);
-    //     if(ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg') {
-    //         return callback(new Error('Only images are allowed'))
-    //     }
-    //     callback(null, true)
-    // }
-});
+var upload = multer({storage: storage});
 
 var Product = require('../models/Product');
 
@@ -33,45 +24,58 @@ router.get('/display/:item_id', function(req, res) {
 		res.render('item', {
 			item: item
 		});
+
+		// res.json(item);
 	});
 });
 
 router.post('/buy/:item_id', upload.none(), function(req, res) {
-	Product.findById(req.params.item_id, function(err, item) {
-        if (err) throw err;
-		
-		if(req.body.amount <= item.amount_total - item.amount_ordered) {
-			Product.increaseAmountOrdered(item, parseInt(req.body.amount), function(err){
-				if(err) throw err;
+	req.checkBody('amount', 'Ilośc produktu jest wymagana').notEmpty();
+	req.checkBody('amount', 'Ilośc musi by liczbą').isDecimal();
 
-				item.amount_ordered = req.body.amount;
+	var errors = req.validationErrors();
+	if(errors) {
+		res.render('index', {
+			errors: errors
+		});
+	}
+	else {
+		Product.findById(req.params.item_id, function(err, item) {
+			if (err) throw err;
+			
+			if(req.body.amount <= item.amount_total - item.amount_ordered) {
+				Product.increaseAmountOrdered(item, parseInt(req.body.amount), function(err){
+					if(err) throw err;
 
-				if(req.session.cart) {
-					var cart = req.session.cart;
-					var pos = cart.findIndex(i => i._id == item._id);
-					
-					if(pos == -1) {
-						cart.push(item);
+					item.amount_ordered = req.body.amount;
+
+					if(req.session.cart) {
+						var cart = req.session.cart;
+						var pos = cart.findIndex(i => i._id == item._id);
+						
+						if(pos == -1) {
+							cart.push(item);
+						}
+						else {
+							var buf = parseInt(cart[pos].amount_ordered) + parseInt(item.amount_ordered);
+							cart[pos].amount_ordered = buf;
+						}
 					}
 					else {
-						var buf = parseInt(cart[pos].amount_ordered) + parseInt(item.amount_ordered);
-						cart[pos].amount_ordered = buf;
+						var cart = [];
+						cart.push(item);
 					}
-				}
-				else {
-					var cart = [];
-					cart.push(item);
-				}
 
-				req.session.cart = cart;
+					req.session.cart = cart;
 
-				res.redirect('/users/cart');
-			});	
-		}
-		else {
-			res.redirect('/product/display/'+item._id);
-		}
-	});
+					res.redirect('/users/cart');
+				});	
+			}
+			else {
+				res.redirect('/product/display/'+item._id);
+			}
+		});
+	}
 });
 
 router.get('/new_product', checkConfirmation, function(req, res){
@@ -82,9 +86,10 @@ router.post('/new_product', checkConfirmation, upload.single('avatar'), function
 	
 	req.checkBody('title', 'Tytuł aukcji jest wymagany').notEmpty();
 	req.checkBody('price', 'Cena produktu jest wymagana').notEmpty();
+	req.checkBody('price', 'Cena musi by liczbą').isDecimal();
 	req.checkBody('amount', 'Ilośc produktu jest wymagana').notEmpty();
+	req.checkBody('amount', 'Ilośc musi by liczbą').isDecimal();
 	req.checkBody('description', 'Opis aukcji jest wymagany').notEmpty();
-	// req.checkBody('file', 'Zdjęcie przedmiotu jest wymagane').notEmpty();
 	
 	var errors = req.validationErrors();
 	if(typeof req.file !== 'undefined'){

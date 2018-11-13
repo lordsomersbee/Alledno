@@ -1,3 +1,4 @@
 /.vs
 /public/img/*
 /node_modules
+/client
