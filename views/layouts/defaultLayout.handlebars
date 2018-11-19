@@ -24,21 +24,21 @@
                     <li role="presentation"><a href="/">Dasboard</a></li>
                 {{#if user}}
                     {{#ifeq user.role "confirmed"}}
-                        <li role="presentation"><a href="/product/new_product">Wystaw produkt</a></li>
-                        <li role="presentation"><a href="/product/show_offers">Twoje aukcje</a></li>
+                        <li role="presentation"><a href="/confirmed/new_product">Wystaw produkt</a></li>
+                        <li role="presentation"><a href="/confirmed/show_offers">Twoje aukcje</a></li>
                     {{/ifeq}}
                     {{#ifeq user.role "admin"}}
-                        <li role="presentation"><a href="/product/new_product">Wystaw produkt</a></li>
-                        <li role="presentation"><a href="/product/show_offers">Twoje aukcje</a></li>
+                        <li role="presentation"><a href="/confirmed/new_product">Wystaw produkt</a></li>
+                        <li role="presentation"><a href="/confirmed/show_offers">Twoje aukcje</a></li>
                         <li role="presentation"><a href="/admin/panel">Panel administracyjny</a></li>
                     {{/ifeq}}
-                    <li role="presentation"><a href="/users/panel">Panel użytkownika</a></li>
-                    <li role="presentation"><a href="/users/cart">Koszyk</a></li>
-                    <li role="presentation"><a href="/users/show_orders">Historia zamowień</a></li>
-                    <li role="presentation"><a href="/users/logout">Logout</a></li>
+                    <li role="presentation"><a href="/auth/panel">Panel użytkownika</a></li>
+                    <li role="presentation"><a href="/auth/cart">Koszyk</a></li>
+                    <li role="presentation"><a href="/auth/show_orders">Historia zamowień</a></li>
+                    <li role="presentation"><a href="/auth/logout">Logout</a></li>
                 {{else}}
-                    <li role="presentation"><a href="/users/login">Login</a></li>
-                    <li role="presentation"><a href="/users/register">Register</a></li>
+                    <li role="presentation"><a href="/login">Login</a></li>
+                    <li role="presentation"><a href="/register">Register</a></li>
                 {{/if}}
             </ul>
             </nav>

@@ -1,32 +1,32 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var exphbs = require('express-handlebars');
-var expressValidator = require('express-validator');
-var flash = require('connect-flash');
-var session = require('express-session');
-var passport = require('passport');
-var LocalStrategy = require('passport-local').Strategy;
-var mongo = require('mongodb');
-var mongoose = require('mongoose');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const exphbs = require('express-handlebars');
+const expressValidator = require('express-validator');
+const flash = require('connect-flash');
+const session = require('express-session');
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const mongo = require('mongodb');
+const mongoose = require('mongoose');
 
 mongoose.connect('mongodb://localhost/AdvancedDatabase', { useNewUrlParser: true });
-var db = mongoose.connection;
+const db = mongoose.connection;
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
-var product = require('./routes/product');
-var admin = require('./routes/admin');
-var payment = require('./routes/payment');
+const routes = require('./routes/unauth_routes');
+const auth = require('./routes/auth_routes');
+const confirmed = require('./routes/confirmed_routes');
+const admin = require('./routes/admin_routes');
+const payment = require('./routes/payment_routes');
 
 //Start
-var app = express();
+const app = express();
 
 //Start view
 app.set('views', path.join(__dirname, 'views'));
 app.engine('handlebars', exphbs({
-    defaultLayout:'defaultLayout',
+    defaultLayout: 'defaultLayout',
     helpers: require("./views/layouts/helpers.js").helpers,
 }));
 app.set('view engine', 'handlebars');
@@ -53,18 +53,18 @@ app.use(passport.session());
 
 //Validator
 app.use(expressValidator({
-    errorFormatter: function(param, msg, value) {
+    errorFormatter: (param, msg, value) => {
         var namespace = param.split('.')
-        , root    = namespace.shift()
-        , formParam = root;
+            , root = namespace.shift()
+            , formParam = root;
 
-        while(namespace.length) {
-        formParam += '[' + namespace.shift() + ']';
+        while (namespace.length) {
+            formParam += '[' + namespace.shift() + ']';
         }
         return {
-        param : formParam,
-        msg   : msg,
-        value : value
+            param: formParam,
+            msg: msg,
+            value: value
         };
     }
 }));
@@ -73,7 +73,7 @@ app.use(expressValidator({
 app.use(flash());
 
 //Global
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
     res.locals.success_msg = req.flash('success_msg');
     res.locals.error_msg = req.flash('error_msg');
     res.locals.error = req.flash('error');
@@ -81,15 +81,48 @@ app.use(function (req, res, next) {
     next();
 });
 
+const checkAuthentication = (req, res, next) => req.isAuthenticated() ? next() : res.redirect("/login");
+
+const checkAdmin = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        if (req.user.role == "admin") {
+            next();
+        } else {
+            req.flash('error_msg', 'Nie masz uprawnień do tych zasobow');
+            res.redirect('/auth/panel');
+        }
+    } else {
+        res.redirect("/login");
+    }
+}
+
+const checkPaymentMode = (req, res, next) => {
+    if (req.isAuthenticated() && req.session.payment_mode == true) next();
+    else {
+        req.flash('error_msg', 'Nie tak szybko hackerze. Nie na warcie Martenzytycznego Mściciela!');
+        res.redirect('/');
+    }
+}
+
+const checkConfirmation = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        if (req.user.role == "confirmed" || req.user.role == "admin") next();
+        else {
+            req.flash('error_msg', 'Musisz byc zweryfikowany aby moc wykonac tą czynnośc');
+            res.redirect('/auth/panel');
+        }
+    } else res.redirect("/login");
+}
+
 //Routes
 app.use('/', routes);
-app.use('/users', users);
-app.use('/product', product);
-app.use('/admin', admin);
-app.use('/payment', payment);
+app.use('/auth', checkAuthentication, auth);
+app.use('/confirmed', checkConfirmation, confirmed);
+app.use('/admin', checkAdmin, admin);
+app.use('/payment', checkPaymentMode, payment);
 
 //Port
 app.set('port', (process.env.PORT || 3001));
-app.listen(app.get('port'), function(){
-	console.log('Server started on port '+app.get('port'));
+app.listen(app.get('port'), () => {
+    console.log('Server started on port ' + app.get('port'));
 });

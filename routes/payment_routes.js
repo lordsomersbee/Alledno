@@ -1,15 +1,15 @@
-var express = require('express');
-var router = express.Router();
-var paypal = require('paypal-rest-sdk');
+const express = require('express');
+const router = express.Router();
+const paypal = require('paypal-rest-sdk');
 
 paypal.configure({
     'mode': 'sandbox', //sandbox or live
-    'client_id': '',
-    'client_secret': ''
+    'client_id': 'AfwIxaLcKIZ3N3qYY2l0rbY48A0F9JgEx-V9zHXUkGvMXyOoB_9mpGIbu2SH7zPMifGefL5TTOTy5T69',
+    'client_secret': 'EKjMACt8Sc2TA38hWf_MIzkLvYwAB7QbnD5hhHMUnjVzEfjfBCznHMKPXn69w2fXMzOPTf1GGnhC9dEN'
 });
 
-router.get('/', checkPaymentMode, function(req, res) {
-	var create_payment_json = {
+router.get('/', (req, res) => {
+    const create_payment_json = {
         "intent": "sale",
         "payer": {
             "payment_method": "paypal"
@@ -30,8 +30,8 @@ router.get('/', checkPaymentMode, function(req, res) {
         }]
     };
 
-    var sum = 0;
-	req.session.cart.forEach(function(item) {
+    const sum = 0;
+    req.session.cart.forEach((item) => {
         sum += item.price * item.amount_ordered;
         create_payment_json.transactions[0].item_list.items.push({
             "name": item.title,
@@ -43,13 +43,13 @@ router.get('/', checkPaymentMode, function(req, res) {
     });
     create_payment_json.transactions[0].amount.total = sum;
     req.session.sum = sum;
-    
-    paypal.payment.create(create_payment_json, function (error, payment) {
+
+    paypal.payment.create(create_payment_json, (error, payment) => {
         if (error) {
             throw error;
         } else {
-            payment.links.forEach(function(link){
-                if(link.rel === "approval_url") {
+            payment.links.forEach((link) => {
+                if (link.rel === "approval_url") {
                     res.redirect(link.href);
                 }
             });
@@ -57,11 +57,13 @@ router.get('/', checkPaymentMode, function(req, res) {
     });
 });
 
-router.get("/success", checkPaymentMode, function(req, res){
-    var payerID = req.query.PayerID;
-    var paymentID = req.query.paymentId;
+router.get("/success", (req, res) => {
+    // var payerID = req.query.PayerID;
+    // var paymentID = req.query.paymentId;
 
-    var execute_payment_json = {
+    const {payerID, paymentID} = req.query;
+
+    const execute_payment_json = {
         "payer_id": payerID,
         "transactions": [{
             "amount": {
@@ -71,39 +73,25 @@ router.get("/success", checkPaymentMode, function(req, res){
         }]
     };
 
-    paypal.payment.execute(paymentID, execute_payment_json, function (error, payment) {
+    paypal.payment.execute(paymentID, execute_payment_json, (error, payment) => {
         if (error) {
-            console.log(error.response);
             throw error;
         } else {
-            // console.log("Get Payment Response");
-            // console.log(JSON.stringify(payment));
             delete req.session.sum;
             delete req.session.cart;
             delete req.session.payment_mode;
-        
+
             req.flash('success_msg', 'Zamowienie zakończone');
             res.redirect('/');
         }
     });
 });
 
-router.get("/cancel", checkPaymentMode, function(req, res){
+router.get("/cancel", (req, res) => {
     delete req.session.payment_mode;
 
     req.flash('error_msg', 'Zamowienie anulowane');
     res.redirect('/');
 });
-
-//----------------------------
-
-function checkPaymentMode(req,res,next){
-    if(req.isAuthenticated() && req.session.payment_mode == true){
-        next();
-    } else {
-        req.flash('error_msg', 'Nie tak szybko hackerze. Nie na warcie Martenzytycznego Mściciela!');
-        res.redirect('/');
-    }
-}
 
 module.exports = router;

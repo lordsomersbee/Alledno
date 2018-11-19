@@ -17,7 +17,7 @@
 
 <div class="row">
     <div class="col-md-6">
-        <form method="POST" action="/users/change_password">
+        <form method="POST" action="/auth/change_password">
             <label>Zmień hasło</label>
             <div class="form-group">
                 <input type="password" class="form-control" name="password_old" placeholder="Stare hasło">
@@ -33,7 +33,7 @@
     </div>
 
     <div class="col-md-6">
-        <form method="POST" action="/users/change_email">
+        <form method="POST" action="/auth/change_email">
             <label>Zmień email</label>
             <div class="form-group">
                 <input type="email" class="form-control" name="email" placeholder="Nowy email">
@@ -45,7 +45,7 @@
 
 {{#ifeq user.role "unconfirmed"}}
 <div class="row">
-    <form method="POST" action="/users/confirm">
+    <form method="POST" action="/auth/confirm">
         <label>W celu weryfikacji podaj PESEL</label>
         <div class="form-group">
             <input type="text" class="form-control" name="pesel" placeholder="PESEL">

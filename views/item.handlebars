@@ -11,7 +11,7 @@
             <p class="">{{item.description}}</p>
             {{!-- <div class="d-flex justify-content-between align-items-center"></div> --}}
 
-            <form method="post" action="../buy/{{item._id}}">
+            <form method="post" action="/auth/buy/{{item._id}}">
                 <input type="number" min="1" max={{item.amount_total}} name="amount">
                 {{!-- <input type="number" name="amount"> --}}
                 <p>/{{item.amount_total}}</p>
